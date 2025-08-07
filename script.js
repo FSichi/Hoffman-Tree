@@ -113,11 +113,9 @@ function switchTab(tabId) {
             if (isMobileDevice()) {
                 const container = document.querySelector('.tree-container-responsive');
                 if (container) {
-                    // Asegurar que el scroll esté en el inicio
+                    // Solo resetear posición del scroll
                     container.scrollLeft = 0;
-                    
-                    // Solo forzar scroll horizontal suave, no bloquear vertical
-                    container.style.webkitOverflowScrolling = 'touch';
+                    container.scrollTop = 0;
                 }
             }
         }, 100);
@@ -203,8 +201,23 @@ document.getElementById('input-form').addEventListener('submit', function (e) {
     hideLoading();
     displayResults(symbols, entropy, avgLength, efficiency, channelEfficiency);
     
-    // Habilitar botón de exportar
-    document.getElementById('export-button').disabled = false;
+    // Habilitar botones de exportar
+    const exportButton = document.getElementById('export-button');
+    const exportSvgButton = document.getElementById('export-svg-button');
+    
+    if (exportButton) {
+      exportButton.disabled = false;
+      console.log('Botón de exportar habilitado');
+    } else {
+      console.error('No se encontró el botón export-button');
+    }
+    
+    if (exportSvgButton) {
+      exportSvgButton.disabled = false;
+      console.log('Botón de exportar SVG habilitado');
+    } else {
+      console.error('No se encontró el botón export-svg-button');
+    }
   }, 800);
 });
 
@@ -232,7 +245,33 @@ function displayResults(symbols, entropy, avgLength, efficiency, channelEfficien
   displayTable(symbols);
   
   // Configurar árbol
-  displayTree();
+  if (window.huffmanTree) {
+    // Dibujar árbol textual
+    document.getElementById('tree-text').textContent = drawTree(window.huffmanTree);
+    
+    // Dibujar árbol visual SVG
+    drawSVGTree(window.huffmanTree);
+  }
+  
+  // Asegurar que los botones de exportar estén habilitados
+  setTimeout(() => {
+    const exportButton = document.getElementById('export-button');
+    const exportSvgButton = document.getElementById('export-svg-button');
+    
+    if (exportButton) {
+      exportButton.disabled = false;
+      exportButton.style.opacity = '1';
+      exportButton.style.pointerEvents = 'auto';
+      console.log('Botón de exportar habilitado en displayResults');
+    }
+    
+    if (exportSvgButton) {
+      exportSvgButton.disabled = false;
+      exportSvgButton.style.opacity = '1';
+      exportSvgButton.style.pointerEvents = 'auto';
+      console.log('Botón de exportar SVG habilitado en displayResults');
+    }
+  }, 100);
 }
 
 function displayOverview(symbols, entropy, avgLength, efficiency, channelEfficiency) {
@@ -400,6 +439,7 @@ function drawSVGTree(tree) {
       const container = document.querySelector('.tree-container-responsive');
       if (container) {
         container.scrollLeft = 0; // Resetear scroll horizontal
+        container.scrollTop = 0; // Resetear scroll vertical
       }
     }, 50);
   }
@@ -602,8 +642,13 @@ function drawHorizontalNodes(svg, tree, positions) {
     // Texto del nodo
     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     text.setAttribute('x', x);
-    text.setAttribute('y', y);
-    text.setAttribute('class', 'tree-text-element');
+    text.setAttribute('y', y + 2); // Ajustar posición vertical para mejor centrado
+    text.setAttribute('text-anchor', 'middle'); // Centrar horizontalmente
+    text.setAttribute('dominant-baseline', 'central'); // Centrar verticalmente
+    text.setAttribute('font-family', 'Inter, sans-serif');
+    text.setAttribute('font-size', '14');
+    text.setAttribute('font-weight', '600');
+    text.setAttribute('fill', 'var(--text-primary)');
     text.style.pointerEvents = 'none'; // Para que no interfiera con el tooltip
     
     if (isLeaf) {
@@ -621,9 +666,12 @@ function drawHorizontalNodes(svg, tree, positions) {
       const probText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       probText.setAttribute('x', x);
       probText.setAttribute('y', y + 25);
-      probText.setAttribute('class', 'tree-text-element');
-      probText.style.fontSize = '10px';
-      probText.style.fill = '#94a3b8';
+      probText.setAttribute('text-anchor', 'middle'); // Centrar horizontalmente
+      probText.setAttribute('dominant-baseline', 'central'); // Centrar verticalmente
+      probText.setAttribute('font-family', 'Inter, sans-serif');
+      probText.setAttribute('font-size', '10');
+      probText.setAttribute('font-weight', '400');
+      probText.setAttribute('fill', '#94a3b8');
       probText.style.pointerEvents = 'none';
       probText.textContent = node.prob.toFixed(3);
       svg.appendChild(probText);
@@ -712,52 +760,303 @@ function animateTreeConstruction() {
   }, 200);
 }
 
-// ---------------- Exportar a TXT ----------------
+// ---------------- Exportar Datos Completos ----------------
 
 document.getElementById('export-button').addEventListener('click', () => {
-  const table = document.querySelector('#results table');
-  if (!table) {
-    alert('No hay resultados para exportar.');
+  if (!currentSymbols || !currentCodes || !currentTree) {
+    alert('No hay resultados para exportar. Por favor, genera los códigos primero.');
     return;
   }
 
-  let text = 'ANÁLISIS DE CODIFICACIÓN HUFFMAN\n';
-  text += '================================\n\n';
-  text += 'Símbolo,Probabilidad,Información (bits),Código,Longitud\n';
+  exportCompleteAnalysis();
+});
+
+function exportCompleteAnalysis() {
+  const now = new Date();
+  const timestamp = now.toLocaleString('es-ES');
   
-  table.querySelectorAll('tbody tr').forEach(row => {
-    const cells = row.querySelectorAll('td');
-    const rowData = Array.from(cells).map(td => td.textContent.replace('&nbsp;', ' ')).join(',');
-    text += rowData + '\n';
+  let content = '';
+  
+  // Encabezado
+  content += '═══════════════════════════════════════════════════════════════\n';
+  content += '                ANÁLISIS COMPLETO DE CODIFICACIÓN HUFFMAN\n';
+  content += '═══════════════════════════════════════════════════════════════\n';
+  content += `Generado: ${timestamp}\n`;
+  content += `Desarrollado por: Facundo Sichi\n`;
+  content += `Algoritmo: Huffman - Teoría de la Información\n`;
+  content += '═══════════════════════════════════════════════════════════════\n\n';
+
+  // Datos de entrada
+  content += '📊 DATOS DE ENTRADA:\n';
+  content += '─────────────────────\n';
+  currentSymbols.forEach(symbol => {
+    content += `${symbol.symbol}: ${symbol.prob.toFixed(4)}\n`;
   });
+  content += '\n';
 
-  // Agregar estadísticas
-  const stats = document.querySelectorAll('.stat-card');
-  if (stats.length > 0) {
-    text += '\nESTADÍSTICAS:\n';
-    text += '=============\n';
-    stats.forEach(stat => {
-      const value = stat.querySelector('.stat-value').textContent;
-      const label = stat.querySelector('.stat-label').textContent;
-      text += `${label}: ${value}\n`;
-    });
-  }
+  // Tabla de códigos detallada
+  content += '🔢 CÓDIGOS HUFFMAN GENERADOS:\n';
+  content += '───────────────────────────────\n';
+  content += 'Símbolo | Probabilidad | Información | Código    | Longitud\n';
+  content += '───────┼──────────────┼─────────────┼───────────┼─────────\n';
+  
+  currentSymbols.forEach(symbol => {
+    const code = currentCodes[symbol.symbol] || 'N/A';
+    const info = symbol.prob > 0 ? (-Math.log2(symbol.prob)).toFixed(3) : 'N/A';
+    const length = code !== 'N/A' ? code.length.toString() : 'N/A';
+    const probStr = symbol.prob.toFixed(4);
+    
+    content += `   ${symbol.symbol.padEnd(4)} │ ${probStr.padStart(12)} │ ${info.padStart(11)} │ ${code.padEnd(9)} │ ${length.padStart(8)}\n`;
+  });
+  content += '\n';
 
-  // Agregar representación del árbol
-  if (currentTree) {
-    text += '\nÁRBOL DE HUFFMAN:\n';
-    text += '=================\n';
-    text += drawTree(currentTree);
-  }
+  // Estadísticas calculadas
+  const stats = calculateDetailedStatistics();
+  content += '📈 ESTADÍSTICAS DE EFICIENCIA:\n';
+  content += '────────────────────────────────\n';
+  content += `Entropía (H):                    ${stats.entropy.toFixed(4)} bits\n`;
+  content += `Longitud promedio (L):           ${stats.avgLength.toFixed(4)} bits\n`;
+  content += `Eficiencia de codificación:      ${stats.efficiency.toFixed(2)}%\n`;
+  content += `Redundancia:                     ${stats.redundancy.toFixed(4)} bits\n`;
+  content += `Factor de compresión:            ${stats.compressionRatio.toFixed(2)}x\n`;
+  content += `Bits ahorrados vs ASCII:         ${stats.bitsSaved} bits\n`;
+  content += '\n';
 
-  const blob = new Blob([text], { type: 'text/plain; charset=utf-8' });
+  // Representación textual del árbol
+  content += '🌳 ESTRUCTURA DEL ÁRBOL HUFFMAN:\n';
+  content += '─────────────────────────────────\n';
+  content += generateTreeText(currentTree);
+  content += '\n';
+
+  // Rutas de código
+  content += '🛤️ RUTAS DE CODIFICACIÓN:\n';
+  content += '──────────────────────────\n';
+  currentSymbols.forEach(symbol => {
+    const path = findCodePath(currentTree, symbol.symbol);
+    content += `${symbol.symbol}: ${path}\n`;
+  });
+  content += '\n';
+
+  // Información adicional
+  content += '💡 INFORMACIÓN TÉCNICA:\n';
+  content += '─────────────────────────\n';
+  content += `Total de símbolos:               ${currentSymbols.length}\n`;
+  content += `Profundidad máxima del árbol:    ${calculateMaxDepth(currentTree)}\n`;
+  content += `Número de nodos internos:        ${countInternalNodes(currentTree)}\n`;
+  content += `Número total de nodos:           ${countTotalNodes(currentTree)}\n`;
+  content += '\n';
+
+  content += '═══════════════════════════════════════════════════════════════\n';
+  content += 'Análisis generado con el Visualizador de Huffman de Facundo Sichi\n';
+  content += '═══════════════════════════════════════════════════════════════\n';
+
+  // Crear y descargar archivo
+  const blob = new Blob([content], { type: 'text/plain; charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'analisis_huffman.txt';
+  a.download = `huffman_analysis_${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}_${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}.txt`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+// Funciones auxiliares para el análisis completo
+function calculateDetailedStatistics() {
+  let entropy = 0;
+  let avgLength = 0;
+  let totalBitsASCII = 0;
+  let totalBitsHuffman = 0;
+
+  currentSymbols.forEach(symbol => {
+    const p = symbol.prob;
+    if (p > 0) {
+      entropy += -p * Math.log2(p);
+      const codeLength = currentCodes[symbol.symbol]?.length || 0;
+      avgLength += p * codeLength;
+      totalBitsASCII += p * 8; // ASCII usa 8 bits por carácter
+      totalBitsHuffman += p * codeLength;
+    }
+  });
+
+  const efficiency = (entropy / avgLength) * 100;
+  const redundancy = avgLength - entropy;
+  const compressionRatio = totalBitsASCII / totalBitsHuffman;
+  const bitsSaved = Math.round((totalBitsASCII - totalBitsHuffman) * 1000); // Para 1000 caracteres
+
+  return {
+    entropy,
+    avgLength,
+    efficiency,
+    redundancy,
+    compressionRatio,
+    bitsSaved
+  };
+}
+
+function generateTreeText(node, prefix = '', isLast = true, depth = 0) {
+  if (!node) return '';
+  
+  let result = '';
+  const connector = isLast ? '└── ' : '├── ';
+  const nodeInfo = node.symbol !== null ? 
+    `${node.symbol} (${node.prob.toFixed(3)})` : 
+    `${node.prob.toFixed(3)}`;
+  
+  result += prefix + connector + nodeInfo + '\n';
+  
+  const newPrefix = prefix + (isLast ? '    ' : '│   ');
+  
+  if (node.left || node.right) {
+    if (node.left) {
+      result += generateTreeText(node.left, newPrefix, !node.right, depth + 1);
+    }
+    if (node.right) {
+      result += generateTreeText(node.right, newPrefix, true, depth + 1);
+    }
+  }
+  
+  return result;
+}
+
+function findCodePath(node, symbol, path = '') {
+  if (!node) return null;
+  
+  if (node.symbol === symbol) {
+    return path || 'raíz';
+  }
+  
+  const leftPath = findCodePath(node.left, symbol, path + '0 (izq) → ');
+  if (leftPath) return leftPath;
+  
+  const rightPath = findCodePath(node.right, symbol, path + '1 (der) → ');
+  if (rightPath) return rightPath;
+  
+  return null;
+}
+
+function calculateMaxDepth(node, depth = 0) {
+  if (!node) return depth;
+  if (node.symbol !== null) return depth;
+  
+  return Math.max(
+    calculateMaxDepth(node.left, depth + 1),
+    calculateMaxDepth(node.right, depth + 1)
+  );
+}
+
+function countInternalNodes(node) {
+  if (!node || node.symbol !== null) return 0;
+  return 1 + countInternalNodes(node.left) + countInternalNodes(node.right);
+}
+
+function countTotalNodes(node) {
+  if (!node) return 0;
+  return 1 + countTotalNodes(node.left) + countTotalNodes(node.right);
+}
+
+// ---------------- Exportar Árbol SVG ----------------
+
+document.getElementById('export-svg-button').addEventListener('click', () => {
+  if (!currentTree) {
+    alert('No hay árbol para exportar. Por favor, genera los códigos primero.');
+    return;
+  }
+  
+  exportTreeAsSVG();
 });
+
+function exportTreeAsSVG() {
+  const svg = document.getElementById('tree-svg');
+  if (!svg) {
+    alert('No se pudo encontrar el árbol para exportar.');
+    return;
+  }
+
+  // Clonar el SVG para no afectar el original
+  const svgClone = svg.cloneNode(true);
+  
+  // Agregar estilos CSS inline para que se vean en el archivo exportado
+  const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+  style.textContent = `
+    .tree-node {
+      fill: white;
+      stroke: #2563eb;
+      stroke-width: 2;
+      rx: 8;
+    }
+    .symbol-node {
+      fill: #dcfce7;
+      stroke: #059669;
+    }
+    .tree-edge {
+      stroke: #64748b;
+      stroke-width: 2;
+      fill: none;
+    }
+    .tree-code-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+    .code-0 { fill: #dc2626; }
+    .code-1 { fill: #059669; }
+    text {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      fill: #1e293b;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+  `;
+  
+  svgClone.insertBefore(style, svgClone.firstChild);
+  
+  // Añadir título al SVG
+  const titleGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  const titleText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  titleText.setAttribute('x', svgClone.getAttribute('width') / 2);
+  titleText.setAttribute('y', 30);
+  titleText.setAttribute('text-anchor', 'middle');
+  titleText.setAttribute('font-size', '18');
+  titleText.setAttribute('font-weight', 'bold');
+  titleText.setAttribute('fill', '#1e293b');
+  titleText.textContent = 'Árbol de Huffman - Facundo Sichi';
+  titleGroup.appendChild(titleText);
+  
+  const subtitleText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  subtitleText.setAttribute('x', svgClone.getAttribute('width') / 2);
+  subtitleText.setAttribute('y', 50);
+  subtitleText.setAttribute('text-anchor', 'middle');
+  subtitleText.setAttribute('font-size', '12');
+  subtitleText.setAttribute('fill', '#64748b');
+  subtitleText.textContent = `Generado el ${new Date().toLocaleString('es-ES')}`;
+  titleGroup.appendChild(subtitleText);
+  
+  svgClone.insertBefore(titleGroup, svgClone.firstChild);
+  
+  // Ajustar viewBox para incluir el título
+  const currentViewBox = svgClone.getAttribute('viewBox').split(' ');
+  currentViewBox[1] = '-60'; // Mover hacia arriba para dar espacio al título
+  currentViewBox[3] = parseInt(currentViewBox[3]) + 60; // Aumentar altura
+  svgClone.setAttribute('viewBox', currentViewBox.join(' '));
+  
+  // Convertir a string SVG
+  const serializer = new XMLSerializer();
+  const svgString = serializer.serializeToString(svgClone);
+  
+  // Crear blob y descargar
+  const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const now = new Date();
+  a.download = `huffman_tree_${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}_${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}.svg`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 // ---------------- Responsive Tree ----------------
 

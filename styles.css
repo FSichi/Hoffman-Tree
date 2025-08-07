@@ -436,10 +436,12 @@ textarea {
         border-right: none;
         /* Asegurar scroll en ambas direcciones para preservar espaciado del árbol */
         overflow-x: auto;
-        overflow-y: auto; /* Permitir scroll vertical también */
+        overflow-y: auto;
+        /* Permitir scroll vertical también */
         /* Mejorar scroll táctil en móvil */
         -webkit-overflow-scrolling: touch;
-        touch-action: auto; /* Permitir scroll libre en ambas direcciones */
+        touch-action: auto;
+        /* Permitir scroll libre en ambas direcciones */
         scroll-behavior: smooth;
         /* Forzar scroll horizontal */
         white-space: nowrap;
@@ -517,7 +519,8 @@ textarea {
     gap: 1rem;
     margin-bottom: 1.5rem;
     flex-wrap: wrap;
-    justify-content: center; /* Centrar el botón único */
+    justify-content: center;
+    /* Centrar el botón único */
 }
 
 .tree-legend {
