@@ -46,7 +46,10 @@ H       | 0.01
 
 **4. Redundancia:**
 
-	Redundancia = L - H ≈ 2.44 - 2.38 ≈ 0.06 bits/símbolo
+	Redundancia = (Hmax - H) / Hmax
+	donde Hmax = log₂(n) y n es la cantidad de símbolos.
+	Hmax = log₂(8) = 3 bits/símbolo
+	Redundancia = (3 - 2.38) / 3 ≈ 0.21 (21%)
 
 **5. Eficiencia del canal:**
 
@@ -79,8 +82,8 @@ La **eficiencia del código** mide cuán cerca está el código generado del lí
 Valores cercanos a 1 (o 100%) indican un código óptimo, sin redundancia.
 
 
-### Redundancia relativa
-La **redundancia relativa** mide cuán lejos está la fuente de la máxima entropía posible (fuente equiprobable):
+### Redundancia
+La **redundancia** mide cuán lejos está la fuente de la máxima entropía posible (fuente equiprobable):
 
 	Redundancia relativa = (Hmax - H) / Hmax
 
