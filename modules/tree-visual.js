@@ -1,4 +1,3 @@
-// tree-visual.js
 // Visualización, animaciones y exportación SVG del árbol de Huffman
 import { getMaxDepth, countLeavesInTree } from './huffman-calc.js';
 

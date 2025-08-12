@@ -1,4 +1,3 @@
-// huffman-calc.js
 // Lógica de Huffman, cálculos, estadísticas y exportación de análisis
 
 export function buildHuffmanTree(symbols) {
