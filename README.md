@@ -2,7 +2,7 @@
 # Informe académico: Visualizador y Codificador de Huffman
 
 ## Descripción general
-Esta aplicación web implementa el algoritmo de Huffman para la codificación óptima de fuentes, permitiendo visualizar el árbol, los códigos generados y analizar la eficiencia del código y del canal. Fue desarrollada como proyecto académico para la materia Teoría de la Información.
+Esta aplicación web implementa el algoritmo de Huffman para la codificación óptima de fuentes, permitiendo visualizar el árbol, los códigos generados y analizar la eficiencia del código y del canal. Fue desarrollada como proyecto académico para la materia Comunicaciones en la UTN FRT 2025
 
 ## ¿Cómo funciona el algoritmo de Huffman?
 El algoritmo de Huffman es un método de compresión sin pérdida que asigna códigos binarios más cortos a los símbolos más probables y códigos más largos a los menos probables. El proceso es:
