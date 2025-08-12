@@ -92,7 +92,9 @@ La **eficiencia del canal** compara la entropía de la fuente con la tasa máxim
 
 donde C es la tasa del canal (bits/símbolo). Indica qué porcentaje de la capacidad del canal se utiliza para transmitir información útil.
 
-### Referencias teóricas (Me guie de algunas cosas de estas referencias. Mas los apuntes de la Cátedra de Comunicaciones UTN FRT 2025.)
+### Referencias teóricas
+
+- Cátedra de Comunicaciones U.T.N F.R.T @2025.
 - Cover & Thomas, Elements of Information Theory
 - MacKay, Information Theory, Inference, and Learning Algorithms
 
