@@ -53,14 +53,25 @@ export function displayResults(symbols, entropy, avgLength, efficiency, channelE
 }
 
 export function displayOverview(symbols, entropy, avgLength, efficiency, channelEfficiency) {
+  const n = symbols.length;
+  const hmax = Math.log2(n);
+  const redundancy = hmax > 0 ? (hmax - entropy) / hmax : 0;
   const statsHTML = `
     <div class="stat-card">
       <div class="stat-value">${entropy.toFixed(3)}</div>
       <div class="stat-label">Entropía (bits)</div>
     </div>
     <div class="stat-card">
+      <div class="stat-value">${hmax.toFixed(3)}</div>
+      <div class="stat-label">Entropía Máxima (bits)</div>
+    </div>
+    <div class="stat-card">
       <div class="stat-value">${avgLength.toFixed(3)}</div>
       <div class="stat-label">Longitud Media</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${(redundancy * 100).toFixed(2)}%</div>
+      <div class="stat-label">Redundancia</div>
     </div>
     <div class="stat-card">
       <div class="stat-value">${(efficiency * 100).toFixed(2)}%</div>
@@ -70,6 +81,7 @@ export function displayOverview(symbols, entropy, avgLength, efficiency, channel
       <div class="stat-value">${(channelEfficiency * 100).toFixed(2)}%</div>
       <div class="stat-label">Eficiencia Canal</div>
     </div>
+   
   `;
   document.getElementById('statistics-container').innerHTML = statsHTML;
   const codesHTML = symbols.map(s => `
@@ -82,16 +94,21 @@ export function displayOverview(symbols, entropy, avgLength, efficiency, channel
 }
 
 export function displayTable(symbols) {
-  const tableRows = symbols.map(s => `
+  // Ordenar por probabilidad descendente (mayor a menor)
+  const sorted = [...symbols].sort((a, b) => b.prob - a.prob);
+  const tableRows = sorted.map(s => `
     <tr class="fade-in">
       <td><strong>${s.symbol}</strong></td>
-      <td>${s.prob.toFixed(4)}</td>
+      <td>${s.prob.toFixed(3)} (${(s.prob * 100).toFixed(2)}%)</td>
       <td>${s.info.toFixed(3)}</td>
       <td><code>${s.code}</code></td>
       <td>${s.length}</td>
     </tr>
   `).join('');
   const tableHTML = `
+    <div style="margin:8px;text-align:right;font-size:0.95em;color:#64748b;">
+      <span>Ordenado por probabilidad (mayor a menor)</span>
+    </div>
     <table>
       <thead>
         <tr>

@@ -78,12 +78,14 @@ La **eficiencia del código** mide cuán cerca está el código generado del lí
 
 Valores cercanos a 1 (o 100%) indican un código óptimo, sin redundancia.
 
-### Redundancia
-La **redundancia** es la diferencia entre la longitud media y la entropía:
 
-	Redundancia = L - H
+### Redundancia relativa
+La **redundancia relativa** mide cuán lejos está la fuente de la máxima entropía posible (fuente equiprobable):
 
-Indica cuántos bits extra, en promedio, se usan respecto al mínimo teórico.
+	Redundancia relativa = (Hmax - H) / Hmax
+
+donde Hmax = log₂(n) y n es la cantidad de símbolos.
+Valores cercanos a 0 indican una fuente muy aleatoria (equiprobable), valores altos indican fuente predecible.
 
 ### Eficiencia del canal
 La **eficiencia del canal** compara la entropía de la fuente con la tasa máxima del canal (capacidad):
